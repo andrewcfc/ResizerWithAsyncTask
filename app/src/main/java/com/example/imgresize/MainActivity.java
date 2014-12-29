@@ -9,12 +9,12 @@ import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import org.json.JSONArray;
@@ -91,19 +91,23 @@ public class MainActivity extends ActionBarActivity {
 
         // выполняется 3
         protected void onPostExecute(ArrayList<Bitmap> image) {
-            setImage(image);
+            setImages(image);
         }
 
         // выполняется 4
-        private void setImage(ArrayList<Bitmap> image)
+        private void setImages(ArrayList<Bitmap> image)
         {
-            mImageView.setImageBitmap(image.get(5));
-           // mImageView.setBackgroundDrawable(new BitmapDrawable(image));
-
+          pictures = image;
+          Button showBtn = (Button) findViewById(R.id.showBtn);
+          Button downloadBtn = (Button) findViewById(R.id.downloadBtn);
+          downloadBtn.setVisibility(View.INVISIBLE);
+          showBtn.setVisibility(View.VISIBLE);
         }
-
     }
 
+    public void showImages(View v){
+        mImageView.setImageBitmap(pictures.get(0));
+    }
 
     public ArrayList<String> parseJSON() throws JSONException, IOException {
         String json;
