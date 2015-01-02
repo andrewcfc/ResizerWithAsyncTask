@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Image Resizer</string>
+    <string name="dwnld_btn_text">START DOWNLOADING</string>
+    <string name="show_btn_text">SHOW IMAGES</string>
+    <string name="reading_error">Error reading file</string>
+    <string name="action_settings">Settings</string>
+
+
+</resources>

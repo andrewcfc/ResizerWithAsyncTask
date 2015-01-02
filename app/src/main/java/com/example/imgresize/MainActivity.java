@@ -9,13 +9,16 @@ import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +27,8 @@ import org.json.JSONObject;
 public class MainActivity extends ActionBarActivity {
 
     private ImageView mImageView;
+
+    public int currentImage=0;
 
     public ArrayList<String> links = new ArrayList<>();
     public ArrayList<Bitmap> pictures = new ArrayList<>();
@@ -63,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
             BufferedOutputStream out;
             InputStream in;
             BufferedInputStream buf;
-
+            int width, height, nheight, nwidth;
             for(int i=0; i<links.size(); i++){
                 try {
                     url = new URL(_url.get(i));
@@ -79,10 +84,20 @@ public class MainActivity extends ActionBarActivity {
                     if (buf != null) {
                         buf.close();
                     }
+
+                    height = bMap.getHeight();
+                    width = bMap.getWidth();
+                    nwidth = 350;
+                    nheight = (int)(height/(width/nwidth));
+
+
+                    mImageView.getLayoutParams().width = nwidth;
+                    mImageView.getLayoutParams().height = nheight;
+                    bMap = Bitmap.createScaledBitmap(bMap, nwidth, nheight, true);
                     pics.add(bMap);
 
                 } catch (Exception e) {
-                    Log.e("Error reading file", e.toString());
+                    Log.e("@string/reading_error", e.toString());
                 }
             }
 
@@ -97,16 +112,23 @@ public class MainActivity extends ActionBarActivity {
         // выполняется 4
         private void setImages(ArrayList<Bitmap> image)
         {
-          pictures = image;
-          Button showBtn = (Button) findViewById(R.id.showBtn);
-          Button downloadBtn = (Button) findViewById(R.id.downloadBtn);
-          downloadBtn.setVisibility(View.INVISIBLE);
-          showBtn.setVisibility(View.VISIBLE);
+            pictures = image;
+            ImageButton downloadBtn = (ImageButton) findViewById(R.id.downloadBtn);
+            ImageButton showBtn = (ImageButton) findViewById(R.id.showButt);
+            downloadBtn.setVisibility(View.INVISIBLE);
+            showBtn.setVisibility(View.VISIBLE);
+            TextView textView = (TextView) findViewById(R.id.buttonText);
+            textView.setText(getResources().getString(R.string.show_btn_text));
         }
     }
 
     public void showImages(View v){
+        ImageButton btnPrev = (ImageButton) findViewById(R.id.prevPic);
+        btnPrev.setVisibility(View.VISIBLE);
+        ImageButton btnNext = (ImageButton) findViewById(R.id.nextPic);
+        btnNext.setVisibility(View.VISIBLE);
         mImageView.setImageBitmap(pictures.get(0));
+        currentImage = 0;
     }
 
     public ArrayList<String> parseJSON() throws JSONException, IOException {
@@ -133,4 +155,24 @@ public class MainActivity extends ActionBarActivity {
         return urls;
     }
 
+
+    public void clickOnNext(View v){
+        if(currentImage<pictures.size()-1){
+            mImageView.setImageBitmap(pictures.get(++currentImage));
+        }
+        else if(currentImage==pictures.size()-1){
+            mImageView.setImageBitmap(pictures.get(0));
+            currentImage=0;
+        }
+    }
+
+    public void clickOnPrev(View v){
+        if(currentImage>0){
+            mImageView.setImageBitmap(pictures.get(--currentImage));
+        }
+        else if(currentImage==0){
+            mImageView.setImageBitmap(pictures.get(pictures.size()-1));
+            currentImage = pictures.size()-1;
+        }
+    }
 }
