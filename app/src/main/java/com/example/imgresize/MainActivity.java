@@ -21,6 +21,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.example.imgresize.data.model.DownloadImage;
 import com.example.imgresize.data.model.ImageModel;
 import com.example.imgresize.data.model.data.assets.Parsing;
 
@@ -59,62 +60,7 @@ public class MainActivity extends ActionBarActivity {
         }).execute(links);
     }
 
-
-    // использую AsyncTask
-    public static class DownloadImage extends AsyncTask<ArrayList<ImageModel>, Void, ArrayList<Bitmap>> {
-        Context context;
-        private IOnPicturesDownloader checker;
-
-        DownloadImage(Context context, IOnPicturesDownloader checker) {
-            this.context = context;
-            this.checker = checker;
-        }
-
-        public interface IOnPicturesDownloader{
-            public void onImagesDownloaded(ArrayList<Bitmap> images);
-        }
-
-        @SafeVarargs
-        @Override  // выполняется 1
-        protected final ArrayList<Bitmap> doInBackground(ArrayList<ImageModel>... arg0) {
-            return downloadImage(arg0[0]);
-        }
-
-        // выполняется 2
-        private ArrayList<Bitmap> downloadImage(ArrayList<ImageModel> _url) {
-            ArrayList<Bitmap> pics = new ArrayList<>();
-            URL url;
-            InputStream in;
-            BufferedInputStream buf;
-            for (int i = 0; i < _url.size(); i++) {
-                try {
-                    url = new URL(_url.get(i).url);
-                    in = url.openStream();
-                    buf = new BufferedInputStream(in);
-                    Bitmap bMap = BitmapFactory.decodeStream(buf);
-                    if (in != null) {
-                        in.close();
-                    }
-                    if (buf != null) {
-                        buf.close();
-                    }
-                    bMap = Bitmap.createScaledBitmap(bMap, 350, 350, false);
-                    pics.add(bMap);
-                } catch (Exception e) {
-                    Log.e("Error reading file", e.toString());
-                }
-            }
-
-            return pics;
-        }
-
-        // выполняется 3
-        protected void onPostExecute(ArrayList<Bitmap> image) {
-              checker.onImagesDownloaded(image);
-        }
-
-    }
-
+    //_________________________ADAPTOR FOR LIST_______________________________________
     public class ImageAdapter extends BaseAdapter {
         Context context;
         ArrayList<Bitmap> images;
