@@ -1,37 +1,36 @@
 package com.example.imgresize;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.ViewGroup;
 
-import org.json.JSONArray;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+
+import com.example.imgresize.data.model.ImageModel;
+import com.example.imgresize.data.model.data.assets.Parsing;
+
 import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainActivity extends ActionBarActivity {
 
-    private ImageView mImageView;
+    public ArrayList<ImageModel> links = new ArrayList<>();
+    ListView imageList;
 
-    public int currentImage=0;
-
-    public ArrayList<String> links = new ArrayList<>();
-    public ArrayList<Bitmap> pictures = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,65 +38,70 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            links = parseJSON();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            links = Parsing.parseJSON(this);
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
     }
 
+
+
     public void startDownloading(View view) {
-        mImageView = (ImageView) findViewById(R.id.ImageField);
-        new DownloadImage().execute(links);
+        imageList = (ListView) findViewById(R.id.listView);
+
+        new DownloadImage(MainActivity.this, new DownloadImage.IOnPicturesDownloader() {
+            @Override
+            public void onImagesDownloaded(ArrayList<Bitmap> images) {
+                ImageAdapter adapter = new ImageAdapter(MainActivity.this, images);
+                imageList.setAdapter(adapter);
+                imageList.setVisibility(View.VISIBLE);
+            }
+        }).execute(links);
     }
 
 
     // использую AsyncTask
-    public class DownloadImage extends AsyncTask<ArrayList<String>, Void, ArrayList<Bitmap>> {
+    public static class DownloadImage extends AsyncTask<ArrayList<ImageModel>, Void, ArrayList<Bitmap>> {
+        Context context;
+        private IOnPicturesDownloader checker;
 
+        DownloadImage(Context context, IOnPicturesDownloader checker) {
+            this.context = context;
+            this.checker = checker;
+        }
+
+        public interface IOnPicturesDownloader{
+            public void onImagesDownloaded(ArrayList<Bitmap> images);
+        }
+
+        @SafeVarargs
         @Override  // выполняется 1
-        protected ArrayList<Bitmap> doInBackground(ArrayList<String>... arg0) {
+        protected final ArrayList<Bitmap> doInBackground(ArrayList<ImageModel>... arg0) {
             return downloadImage(arg0[0]);
         }
 
         // выполняется 2
-        private ArrayList<Bitmap> downloadImage(ArrayList<String> _url) {
+        private ArrayList<Bitmap> downloadImage(ArrayList<ImageModel> _url) {
             ArrayList<Bitmap> pics = new ArrayList<>();
             URL url;
-            BufferedOutputStream out;
             InputStream in;
             BufferedInputStream buf;
-            int width, height, nheight, nwidth;
-            for(int i=0; i<links.size(); i++){
+            for (int i = 0; i < _url.size(); i++) {
                 try {
-                    url = new URL(_url.get(i));
+                    url = new URL(_url.get(i).url);
                     in = url.openStream();
-
                     buf = new BufferedInputStream(in);
-
                     Bitmap bMap = BitmapFactory.decodeStream(buf);
-
                     if (in != null) {
                         in.close();
                     }
                     if (buf != null) {
                         buf.close();
                     }
-
-                    height = bMap.getHeight();
-                    width = bMap.getWidth();
-                    nwidth = 350;
-                    nheight = (int)(height/(width/nwidth));
-
-
-                    mImageView.getLayoutParams().width = nwidth;
-                    mImageView.getLayoutParams().height = nheight;
-                    bMap = Bitmap.createScaledBitmap(bMap, nwidth, nheight, true);
+                    bMap = Bitmap.createScaledBitmap(bMap, 350, 350, false);
                     pics.add(bMap);
-
                 } catch (Exception e) {
-                    Log.e("@string/reading_error", e.toString());
+                    Log.e("Error reading file", e.toString());
                 }
             }
 
@@ -106,73 +110,49 @@ public class MainActivity extends ActionBarActivity {
 
         // выполняется 3
         protected void onPostExecute(ArrayList<Bitmap> image) {
-            setImages(image);
+              checker.onImagesDownloaded(image);
         }
 
-        // выполняется 4
-        private void setImages(ArrayList<Bitmap> image)
-        {
-            pictures = image;
-            ImageButton downloadBtn = (ImageButton) findViewById(R.id.downloadBtn);
-            ImageButton showBtn = (ImageButton) findViewById(R.id.showButt);
-            downloadBtn.setVisibility(View.INVISIBLE);
-            showBtn.setVisibility(View.VISIBLE);
-            TextView textView = (TextView) findViewById(R.id.buttonText);
-            textView.setText(getResources().getString(R.string.show_btn_text));
+    }
+
+    public class ImageAdapter extends BaseAdapter {
+        Context context;
+        ArrayList<Bitmap> images;
+
+        public ImageAdapter(Context context, ArrayList<Bitmap> imgs) {
+            //super(context, R.layout.image_row, R.id.imageInRow, imgs);
+
+            this.images = imgs;
+            this.context = context;
+        }
+
+        @Override
+        public int getCount() {
+            return images.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return images.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View row = convertView;
+            if (row == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                row = inflater.inflate(R.layout.image_row, parent, false);
+            }
+            ImageView img = (ImageView) row.findViewById(R.id.imageInRow);
+            img.setImageBitmap(images.get(position));
+
+            return row;
         }
     }
 
-    public void showImages(View v){
-        ImageButton btnPrev = (ImageButton) findViewById(R.id.prevPic);
-        btnPrev.setVisibility(View.VISIBLE);
-        ImageButton btnNext = (ImageButton) findViewById(R.id.nextPic);
-        btnNext.setVisibility(View.VISIBLE);
-        mImageView.setImageBitmap(pictures.get(0));
-        currentImage = 0;
-    }
-
-    public ArrayList<String> parseJSON() throws JSONException, IOException {
-        String json;
-        try {
-            InputStream is = getAssets().open("lampard.json");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            json = new String(buffer, "UTF-8");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        JSONObject JSObj = new JSONObject(json);
-        ArrayList<String> urls = new ArrayList<>();
-        JSONArray m_jArry = JSObj.getJSONArray("URLS");
-
-        for (int i = 0; i < m_jArry.length(); i++) {
-            JSONObject o = (JSONObject) m_jArry.get(i);
-            urls.add(o.get("url").toString());
-        }
-        return urls;
-    }
-
-
-    public void clickOnNext(View v){
-        if(currentImage<pictures.size()-1){
-            mImageView.setImageBitmap(pictures.get(++currentImage));
-        }
-        else if(currentImage==pictures.size()-1){
-            mImageView.setImageBitmap(pictures.get(0));
-            currentImage=0;
-        }
-    }
-
-    public void clickOnPrev(View v){
-        if(currentImage>0){
-            mImageView.setImageBitmap(pictures.get(--currentImage));
-        }
-        else if(currentImage==0){
-            mImageView.setImageBitmap(pictures.get(pictures.size()-1));
-            currentImage = pictures.size()-1;
-        }
-    }
 }

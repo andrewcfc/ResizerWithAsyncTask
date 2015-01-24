@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Контроль размеров</string>
+    <string name="app_name">Сжать картинку</string>
     <string name="dwnld_btn_text">НАЧАТЬ ЗАГРУЗКУ</string>
     <string name="show_btn_text">ОТОБРАЗИТЬ</string>
     <string name="reading_error">Ошибка при чтении файла</string>
