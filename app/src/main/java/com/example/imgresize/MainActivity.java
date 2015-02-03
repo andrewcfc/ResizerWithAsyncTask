@@ -3,9 +3,11 @@ package com.example.imgresize;
 import java.util.ArrayList;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -17,8 +19,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.example.imgresize.data.model.DownloadImage;
+import com.example.imgresize.data.model.data.assets.MySQLiteHelper;
+import com.example.imgresize.data.model.data.network.DownloadImage;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -61,20 +65,36 @@ public class MainActivity extends ActionBarActivity {
     public class ImageReceive extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            int colums=0;
+            long res;
             paths = intent.getStringArrayListExtra(PARAMS);
+            stopService(new Intent(MainActivity.this, DownloadImage.class));
+
+            MySQLiteHelper help = new MySQLiteHelper(MyApplication.getAppContext());
+            SQLiteDatabase dataBase = help.getWritableDatabase();
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
             for(int i=0; i<paths.size(); i++) {
                 images.add(BitmapFactory.decodeFile(paths.get(i), options));
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MySQLiteHelper.PATH, paths.get(i));
+
+                res = dataBase.insert(MySQLiteHelper.TABLE_NAME, null, contentValues);
+                if(res>0){
+                    colums++;
+                }
             }
 
             ImageAdapter adapter = new ImageAdapter(MainActivity.this, images);
             imageList.setAdapter(adapter);
-            imageList.setVisibility(View.VISIBLE);
 
-            stopService(new Intent(MainActivity.this, DownloadImage.class));
+            if(colums==paths.size()){
+                Toast.makeText(context, "Все записи добавлены в БД!", Toast.LENGTH_LONG).show();
+            }
+            dataBase.close();
+
         }
     }
 
