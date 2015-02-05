@@ -97,13 +97,13 @@ public class DownloadImage extends Service {
             ArrayList<String> links = new ArrayList<>();
             String fileName, link;
 
-            //__________________________NOTIFICATION ON DOWNLOADING IMAGES!____________________________________________________
-
-
-            int incr=0;
+            int incr=0, colums = 0;
+            long res;
 
             ProgressNotification.startNotification(MyApplication.getAppContext());
 
+            MySQLiteHelper help = new MySQLiteHelper(MyApplication.getAppContext());
+            SQLiteDatabase dataBase = help.getWritableDatabase();
 
             for (int i = 0; i < _url.size(); i++) {
                 try {
@@ -118,11 +118,22 @@ public class DownloadImage extends Service {
                     links.add(file.getAbsolutePath());
                     bMap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(file));
 
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(MySQLiteHelper.PATH, file.getAbsolutePath());
+
+                    res = dataBase.insert(MySQLiteHelper.TABLE_NAME, null, contentValues);
+                    if(res>0){
+                        colums++;
+                    }
+                    if(colums==_url.size()){
+                        Toast.makeText(context, "Все записи добавлены в БД!", Toast.LENGTH_LONG).show();
+                    }
                 } catch (Exception e) {
                     Log.e("Error reading file", e.toString());
                 }
             }
 
+            dataBase.close();
             return links;
         }
 
