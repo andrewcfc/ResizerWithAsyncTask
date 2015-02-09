@@ -41,6 +41,4 @@ public class ProgressNotification {
                 mNotifyManager.notify(ID, mBuilder.build());
             }
         }
-
-
     }

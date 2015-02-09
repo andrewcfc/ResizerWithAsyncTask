@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,7 +14,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.imgresize.MainActivity;
-import com.example.imgresize.MyApplication;
 import com.example.imgresize.data.model.ImageModel;
 import com.example.imgresize.data.model.data.assets.MySQLiteHelper;
 import com.example.imgresize.data.model.data.assets.ProgressNotification;
@@ -100,21 +100,40 @@ public class DownloadImage extends Service {
             int incr=0, colums = 0;
             long res;
 
-            ProgressNotification.startNotification(MyApplication.getAppContext());
+            ProgressNotification.startNotification(context);
 
-            MySQLiteHelper help = new MySQLiteHelper(MyApplication.getAppContext());
+            MySQLiteHelper help = new MySQLiteHelper(context);
             SQLiteDatabase dataBase = help.getWritableDatabase();
 
             for (int i = 0; i < _url.size(); i++) {
                 try {
+                    link = _url.get(i).url;
+
+                    fileName = link.substring(link.lastIndexOf('/') + 1, link.length());
+                    File file = new File(context.getCacheDir() + fileName);
+
+                    String whereClause = MySQLiteHelper.PATH+"=?";
+                    String [] whereArgs = {file.getAbsolutePath()};
+                    Cursor cursor = dataBase.query(MySQLiteHelper.TABLE_NAME,
+                            new String[]{MySQLiteHelper.PATH},
+                            whereClause,
+                            whereArgs,
+                            null,
+                            null,
+                            null);
+
+                    if(cursor.getCount()>0){
+                        incr++;
+                        ProgressNotification.callProgressBar(_url.size(), incr);
+                        continue;
+                    }
+
                     Bitmap bMap = getScaledBitmapFromUrl(_url.get(i).url, 350, 350);
 
                     incr++;
                     ProgressNotification.callProgressBar(_url.size(), incr);
 
-                    link = _url.get(i).url;
-                    fileName = link.substring(link.lastIndexOf('/') + 1, link.length());
-                    File file = new File(context.getCacheDir() + fileName);
+
                     links.add(file.getAbsolutePath());
                     bMap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(file));
 

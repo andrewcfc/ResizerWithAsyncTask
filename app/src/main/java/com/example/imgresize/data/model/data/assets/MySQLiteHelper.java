@@ -18,7 +18,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     public MySQLiteHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         this.context = context;
-        Toast.makeText(context, "constructor called", Toast.LENGTH_LONG).show();
     }
 
 
@@ -30,7 +29,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         catch (SQLiteException e){
             Toast.makeText(context, "CREATING ERROR!", Toast.LENGTH_LONG).show();
         }
-        Toast.makeText(context, "onCreate called", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -42,6 +40,5 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         catch (SQLiteException e){
             Toast.makeText(context, "Updating error! called", Toast.LENGTH_LONG).show();
         }
-        Toast.makeText(context, "onUpgrade", Toast.LENGTH_LONG).show();
     }
 }
