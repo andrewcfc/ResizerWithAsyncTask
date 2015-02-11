@@ -2,12 +2,12 @@ package com.example.imgresize;
 
 import java.util.ArrayList;
 
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -20,6 +20,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.example.imgresize.data.model.data.assets.ContentImageProvider;
 import com.example.imgresize.data.model.data.assets.MySQLiteHelper;
 import com.example.imgresize.data.model.data.network.DownloadImage;
 
@@ -62,33 +63,36 @@ public class MainActivity extends ActionBarActivity {
 
     //---------------------RECEIVER-------------------------
     public class ImageReceive extends BroadcastReceiver {
+
         @Override
         public void onReceive(Context context, Intent intent) {
             stopService(new Intent(MainActivity.this, DownloadImage.class));
 
-            MySQLiteHelper help = new MySQLiteHelper(MyApplication.getAppContext());
-            SQLiteDatabase dataBase = help.getWritableDatabase();
-
             String[] colums = {MySQLiteHelper.PATH};
-            Cursor cursor = dataBase.query(true, MySQLiteHelper.TABLE_NAME, colums, null,null, MySQLiteHelper.PATH,null,null,null);
-            int index;
-            while(cursor.moveToNext()){
-                index = cursor.getColumnIndex(MySQLiteHelper.PATH);
-                paths.add(cursor.getString(index));
-            }
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            new AsyncQueryHandler(getContentResolver()){
+                @Override
+                protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+                    super.onQueryComplete(token, cookie, cursor);
+                    int index;
+                    while(cursor.moveToNext()){
+                        index = cursor.getColumnIndex(MySQLiteHelper.PATH);
+                        paths.add(cursor.getString(index));
+                    }
 
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
+                    for(int i=0; i<paths.size(); i++) {
+                        images.add(BitmapFactory.decodeFile(paths.get(i), options));
+                    }
 
-            for(int i=0; i<paths.size(); i++) {
-                images.add(BitmapFactory.decodeFile(paths.get(i), options));
-            }
-
-            ImageAdapter adapter = new ImageAdapter(MainActivity.this, images);
-            imageList.setAdapter(adapter);
+                    ImageAdapter adapter = new ImageAdapter(MainActivity.this, images);
+                    imageList.setAdapter(adapter);
+                }
+            }.startQuery(0, null, ContentImageProvider.CONTENT_URI, colums, null, null, null);
         }
+
     }
 
     //_________________________ADAPTOR FOR LIST_______________________________________
@@ -129,6 +133,6 @@ public class MainActivity extends ActionBarActivity {
 
             return row;
         }
-
     }
+
 }

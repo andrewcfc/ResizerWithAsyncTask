@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.imgresize.MainActivity;
 import com.example.imgresize.data.model.ImageModel;
+import com.example.imgresize.data.model.data.assets.ContentImageProvider;
 import com.example.imgresize.data.model.data.assets.MySQLiteHelper;
 import com.example.imgresize.data.model.data.assets.ProgressNotification;
 import com.example.imgresize.data.model.data.assets.Parsing;
@@ -97,8 +98,7 @@ public class DownloadImage extends Service {
             ArrayList<String> links = new ArrayList<>();
             String fileName, link;
 
-            int incr=0, colums = 0;
-            long res;
+            int incr=0;
 
             ProgressNotification.startNotification(context);
 
@@ -114,12 +114,11 @@ public class DownloadImage extends Service {
 
                     String whereClause = MySQLiteHelper.PATH+"=?";
                     String [] whereArgs = {file.getAbsolutePath()};
-                    Cursor cursor = dataBase.query(MySQLiteHelper.TABLE_NAME,
+
+                    Cursor cursor = context.getContentResolver().query(ContentImageProvider.CONTENT_URI,
                             new String[]{MySQLiteHelper.PATH},
                             whereClause,
                             whereArgs,
-                            null,
-                            null,
                             null);
 
                     if(cursor.getCount()>0){
@@ -133,20 +132,14 @@ public class DownloadImage extends Service {
                     incr++;
                     ProgressNotification.callProgressBar(_url.size(), incr);
 
-
                     links.add(file.getAbsolutePath());
                     bMap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(file));
 
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(MySQLiteHelper.PATH, file.getAbsolutePath());
 
-                    res = dataBase.insert(MySQLiteHelper.TABLE_NAME, null, contentValues);
-                    if(res>0){
-                        colums++;
-                    }
-                    if(colums==_url.size()){
-                        Toast.makeText(context, "Все записи добавлены в БД!", Toast.LENGTH_LONG).show();
-                    }
+                    context.getContentResolver().insert(ContentImageProvider.CONTENT_URI, contentValues);
+
                 } catch (Exception e) {
                     Log.e("Error reading file", e.toString());
                 }
