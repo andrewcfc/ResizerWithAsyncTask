@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.imgresize.MainActivity;
 import com.example.imgresize.data.model.ImageModel;
+import com.example.imgresize.data.model.data.FragmentA;
 import com.example.imgresize.data.model.data.assets.ContentImageProvider;
 import com.example.imgresize.data.model.data.assets.MySQLiteHelper;
 import com.example.imgresize.data.model.data.assets.ProgressNotification;
@@ -56,8 +57,8 @@ public class DownloadImage extends Service {
             @Override
             public void onImagesDownloaded(ArrayList<String> links) {
                 Intent intent = new Intent();
-                intent.setAction(MainActivity.ACTION);
-                intent.putExtra(MainActivity.PARAMS, links);
+                intent.setAction(FragmentA.ACTION);
+                intent.putExtra(FragmentA.PARAMS, links);
                 sendBroadcast(intent);
             }
         });

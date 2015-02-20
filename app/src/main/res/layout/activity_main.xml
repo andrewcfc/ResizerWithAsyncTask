@@ -18,39 +18,27 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <ImageButton
-        android:layout_width="300dp"
-        android:layout_height="55dp"
-        android:id="@+id/downloadBtn"
-        android:background="@drawable/btn"
-        android:clickable="true"
-        android:onClick="startDownloading"
-        android:nestedScrollingEnabled="false"
-        android:layout_marginTop="36dp"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/dwnld_btn_text"
-        android:id="@+id/buttonText"
-        android:textSize="25dp"
-        android:textColor="#FFFFFFFF"
-        android:layout_alignBottom="@+id/downloadBtn"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="12dp" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_below="@+id/downloadBtn"
+    <fragment
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:name="com.example.imgresize.data.model.data.FragmentA"
+        android:id="@+id/fragment"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="25dp"
-        android:layout_marginTop="10dp"
-        android:visibility="visible" />
+        android:layout_marginTop="33dp"
+        android:layout_marginBottom="35dp"
+        android:layout_below="@+id/textView" />
+
+    <fragment
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:name="com.example.imgresize.data.model.data.FragmentB"
+        android:id="@+id/fragment2"
+        android:layout_alignTop="@+id/fragment"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/fragment"
+        android:layout_toEndOf="@+id/fragment"
+        android:layout_marginBottom="35dp" />
 
 </RelativeLayout>
