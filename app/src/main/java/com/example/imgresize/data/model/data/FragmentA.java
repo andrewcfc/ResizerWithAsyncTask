@@ -29,23 +29,18 @@ import java.util.ArrayList;
 public class FragmentA extends Fragment implements AdapterView.OnItemClickListener {// constans
     public static final String ACTION = "com.example.imageresize.DOWNLOADING_BITMAPS";
     public static final String PARAMS = "images";
-
     ArrayList<String> paths = new ArrayList<>();
     ArrayList<Bitmap> images = new ArrayList<>();
-
     Communicator communicator;
     ImageReceive receive;
-
     ListView list;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if(getActivity() instanceof Communicator){
+        if (getActivity() instanceof Communicator) {
             communicator = (Communicator) getActivity();
-        }
-        else throw new ClassCastException("Error!");
+        } else throw new ClassCastException("Error!");
     }
 
     @Override
@@ -59,7 +54,6 @@ public class FragmentA extends Fragment implements AdapterView.OnItemClickListen
 
     public void onResume() {
         super.onResume();
-
         IntentFilter filter = new IntentFilter(ACTION);
         receive = new ImageReceive();
         getActivity().registerReceiver(receive, filter);
@@ -80,16 +74,12 @@ public class FragmentA extends Fragment implements AdapterView.OnItemClickListen
         public void respond(Bitmap image);
     }
 
-
     //_____________RECEIVIER_____________
     public class ImageReceive extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             getActivity().stopService(new Intent(getActivity(), DownloadImage.class));
-
             String[] colums = {MySQLiteHelper.PATH};
-
             new AsyncQueryHandler(getActivity().getContentResolver()) {
                 @Override
                 protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
@@ -99,24 +89,19 @@ public class FragmentA extends Fragment implements AdapterView.OnItemClickListen
                         index = cursor.getColumnIndex(MySQLiteHelper.PATH);
                         paths.add(cursor.getString(index));
                     }
-
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
                     for (int i = 0; i < paths.size(); i++) {
                         images.add(BitmapFactory.decodeFile(paths.get(i), options));
                     }
-
                     ImageAdapter adapter = new ImageAdapter(getActivity(), images);
                     list.setAdapter(adapter);
                 }
             }.startQuery(0, null, ContentImageProvider.CONTENT_URI, colums, null, null, null);
         }
-
     }
 
     // ----------------ADAPTOR-------------------------
-
     public static class ImageAdapter extends BaseAdapter {
         Context context;
         ArrayList<Bitmap> images;
@@ -143,7 +128,6 @@ public class FragmentA extends Fragment implements AdapterView.OnItemClickListen
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
             View row = convertView;
             if (row == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

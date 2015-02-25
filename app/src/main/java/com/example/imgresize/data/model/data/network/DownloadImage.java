@@ -13,7 +13,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.imgresize.MainActivity;
 import com.example.imgresize.data.model.ImageModel;
 import com.example.imgresize.data.model.data.FragmentA;
 import com.example.imgresize.data.model.data.assets.ContentImageProvider;
@@ -60,6 +59,7 @@ public class DownloadImage extends Service {
                 intent.setAction(FragmentA.ACTION);
                 intent.putExtra(FragmentA.PARAMS, links);
                 sendBroadcast(intent);
+                stopSelf();
             }
         });
         downloader.execute(links);
